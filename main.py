@@ -22,7 +22,7 @@ for file in os.listdir(path_plus):
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     images_plus.append(img_array)
-    if len(images_plus) >= 30:
+    if len(images_plus) >= 60:
         break
 
 print("Loaded all + images")
@@ -35,7 +35,7 @@ for file in os.listdir(path_minus):
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     images_minus.append(img_array)
-    if len(images_plus) >= 30:
+    if len(images_plus) >= 60:
         break
 
 print("Loaded all - images")
@@ -59,7 +59,7 @@ X = np.vstack((images_plus, images_minus))
 y = np.concatenate((labels_plus, labels_minus))
 
 # Daten aufteilen
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
 
 # Daten normalisieren
 X_train = X_train / 255.0
@@ -67,11 +67,11 @@ X_test = X_test / 255.0
 
 
 
-def train_sequentially(X_train, y_train, epochs=1000):
-    if os.path.isfile('models/model_sequentially.h5'):
-        model = tf.keras.models.load_model('models/model_sequentially.h5')
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        return model
+def train_sequentially(X_train, y_train, epochs=50):
+    # if os.path.isfile('models/model_sequentially.keras'):
+    #     model = tf.keras.models.load_model('models/model_sequentially.keras')
+    #     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    #     return model
 
     model = Sequential([
         Flatten(input_shape=(150, 150, 3)),
@@ -84,16 +84,16 @@ def train_sequentially(X_train, y_train, epochs=1000):
         print(f"{i}/{len(X_train)}")
         model.fit(X_train[i:i+1], y_train[i:i+1], epochs=epochs)
 
-    model.save('models/model_sequentially.h5')
+    model.save('models/model_sequentially.keras')
     return model
 
 
 
-def train_randomly(X_train, y_train, epochs=1000):
-    if os.path.isfile('models/model_randomly.h5'):
-        model = tf.keras.models.load_model('models/model_randomly.h5')
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        return model
+def train_randomly(X_train, y_train, epochs=50):
+    # if os.path.isfile('models/model_randomly.keras'):
+    #     model = tf.keras.models.load_model('models/model_randomly.keras')
+    #     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    #     return model
 
     model = Sequential([
         Flatten(input_shape=(150, 150, 3)),
@@ -109,15 +109,15 @@ def train_randomly(X_train, y_train, epochs=1000):
             print(f"{epoch}/{epochs}")
             model.fit(X_train[i:i+1], y_train[i:i+1], epochs=1)
 
-    model.save('models/model_randomly.h5')
+    model.save('models/model_randomly.keras')
     return model
 
 
 def build_model_with_hidden_layers(hidden_layers):
-    if os.path.isfile(f'models/model_layers{hidden_layers}.h5'):
-        model = tf.keras.models.load_model(f'models/model_layers{hidden_layers}.h5')
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        return model
+    # if os.path.isfile(f'models/model_layers{hidden_layers}.keras'):
+    #     model = tf.keras.models.load_model(f'models/model_layers{hidden_layers}.keras')
+    #     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    #     return model
 
     model = Sequential([Flatten(input_shape=(150, 150, 3))])
     for _ in range(hidden_layers):
@@ -125,8 +125,8 @@ def build_model_with_hidden_layers(hidden_layers):
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    model.fit(X_train, y_train, epochs=1000, verbose=0)
-    model.save(f'models/model_layers{hidden_layers}.h5')
+    model.fit(X_train, y_train, epochs=500, verbose=0)
+    model.save(f'models/model_layers{hidden_layers}.keras')
     return model
 
 
@@ -136,5 +136,16 @@ def evaluate_model(model, X_test, y_test):
     return accuracy
 
 
-train_sequentially(X_train, y_train)
-train_randomly(X_train, y_train)
+# model_seq = train_sequentially(X_train, y_train)
+# model_ran = train_randomly(X_train, y_train)
+
+# evaluate_model(model_seq, X_test, y_test)
+# evaluate_model(model_ran, X_test, y_test)
+
+model1 = build_model_with_hidden_layers(1)
+model3 = build_model_with_hidden_layers(3)
+model10 = build_model_with_hidden_layers(10)
+
+evaluate_model(model1, X_test, y_test)
+evaluate_model(model3, X_test, y_test)
+evaluate_model(model10, X_test, y_test)
